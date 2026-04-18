@@ -1,0 +1,15 @@
+version: "3.9"
+
+services:
+  gemma4:
+    build: .
+    container_name: gemma4
+    ports:
+      - "8080:80"
+    volumes:
+      - ./.db:/workspace/db
+      - ./pdfs:/workspace/pdfs
+      - ./code:/workspace/code
+    environment:
+      - LOAD_PDFS=false
+    restart: unless-stopped
