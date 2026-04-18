@@ -1,14 +1,23 @@
 import os
 import gradio as gr
 from langchain_community.document_loaders import PyPDFLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.vectorstores import Chroma
-from langchain.embeddings import HuggingFaceEmbeddings
-from langchain.llms import Ollama
+
+# from langchain.text_splitter import RecursiveCharacterTextSplitter
+# from langchain.vectorstores import Chroma
+# from langchain.embeddings import HuggingFaceEmbeddings
+# from langchain.llms import Ollama
+
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_community.vectorstores import Chroma
+# from langchain_community.embeddings import HuggingFaceEmbeddings  # to be deprecated
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.llms import Ollama
 
 
-DB_PATH = "/workspace/db"
+DB_PATH = "/workspace/.db"
 PDF_PATH = "/workspace/pdfs"
+
+os.environ["TRANSFORMERS_VERBOSITY"] = "error"
 
 
 def load_pdfs():
@@ -31,6 +40,7 @@ def build_db():
 
     embeddings = HuggingFaceEmbeddings(
         model_name="sentence-transformers/all-MiniLM-L6-v2"
+        # model_name="BAAI/bge-base-en-v1.5"
     )
 
     vectordb = Chroma.from_documents(
@@ -38,7 +48,7 @@ def build_db():
         embedding=embeddings,
         persist_directory=DB_PATH
     )
-    vectordb.persist()
+    # vectordb.persist()
     return vectordb
 
 def load_db():
@@ -49,14 +59,6 @@ def load_db():
         persist_directory=DB_PATH,
         embedding_function=embeddings
     )
-
-# Decide whether to rebuild DB
-if os.environ.get("LOAD_PDFS", "false").lower() == "true":
-    vectordb = build_db()
-else:
-    vectordb = load_db()
-
-llm = Ollama(model="gemma-4-e4b-it")
 
 def ask(query, history):
     docs = vectordb.similarity_search(query, k=4)
@@ -74,11 +76,21 @@ def ask(query, history):
     history.append((query, answer))
     return history, history
 
-demo = gr.Interface(
-    fn=ask,
-    inputs=[gr.Textbox(label="Ask"), gr.State([])],
-    outputs=[gr.Chatbot(), gr.State()],
-    title="Gemma 4 PDF Assistant"
-)
+if __name__ == "__main__":
 
-demo.launch(server_name="0.0.0.0", server_port=80)
+    # Decide whether to rebuild DB
+    if os.environ.get("LOAD_PDFS", "false").lower() == "true":
+        vectordb = build_db()
+    else:
+        vectordb = load_db()
+
+    llm = Ollama(model="gemma-4-e4b-it")
+
+    demo = gr.Interface(
+        fn=ask,
+        inputs=[gr.Textbox(label="Ask"), gr.State([])],
+        outputs=[gr.Chatbot(), gr.State()],
+        title="Gemma 4 PDF Assistant"
+    )
+
+    demo.launch(server_name="0.0.0.0", server_port=80)

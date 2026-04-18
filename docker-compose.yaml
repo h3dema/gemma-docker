@@ -7,10 +7,10 @@ services:
     ports:
       - "8080:80"
     volumes:
-      - ./.db:/workspace/db
+      - ./db:/workspace/.db
+      - ./ollama:/root/.ollama
       - ./pdfs:/workspace/pdfs
       - ./code:/workspace/code
-      - ./.ollama:/workspace/ollama
     environment:
       - LOAD_PDFS=false
     restart: unless-stopped
