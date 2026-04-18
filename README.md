@@ -1,3 +1,7 @@
+This repo contains a simple implementation of a PDF question-answering system using LangChain, ChromaDB, and Ollama LLM model using the Gemma v4. It is designed to be run in a Docker container for easy setup and deployment.
+
+> This implementation allows you to have a private and simple chatbot using your own PDF documents as the knowledge base.
+
 
 ## Installation
 

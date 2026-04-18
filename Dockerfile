@@ -48,5 +48,5 @@ COPY start_ui.sh /workspace/start_ui.sh
 EXPOSE 80
 
 # Start Ollama + pull model + run app
-# CMD bash -c "/workspace/code/start_ui.sh"
-CMD ["tail", "-f", "/dev/null"]
+CMD ["bash", "-c", "/workspace/start_ui.sh"]
+# CMD ["tail", "-f", "/dev/null"]

@@ -5,13 +5,11 @@ import gradio as gr
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-# from langchain_community.vectorstores import Chroma
-# from langchain_community.embeddings import HuggingFaceEmbeddings  # to be deprecated
 from langchain_community.llms import Ollama
+# from langchain_ollama import OllamaLLM as Ollama
 
 from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
-# from langchain_ollama import OllamaLLM as Ollama
 
 DB_PATH = "/workspace/.db"
 PDF_PATH = "/workspace/pdfs"
@@ -27,6 +25,7 @@ def load_pdfs():
                 loader = PyPDFLoader(os.path.join(root, file))
                 docs.extend(loader.load())
     return docs
+
 
 def build_db():
     docs = load_pdfs()
@@ -49,6 +48,7 @@ def build_db():
     # vectordb.persist()
     return vectordb
 
+
 def load_db():
     embeddings = HuggingFaceEmbeddings(
         model_name="sentence-transformers/all-MiniLM-L6-v2"
@@ -58,7 +58,26 @@ def load_db():
         embedding_function=embeddings
     )
 
+
 def ask(query, history):
+    """
+    Ask a question to the model.
+
+    Parameters
+    ----------
+    query : str
+        The question to ask.
+    history : list
+        The conversation history.
+
+    Returns
+    -------
+    (history, state)
+        history : list
+            The conversation history, including the new question and answer.
+        state : list
+            The state to be passed to the next call.
+    """
     if history is None:
         history = []
 
@@ -80,7 +99,6 @@ def ask(query, history):
             {"role": "assistant", "content": [{"type": "text", "text": answer}]}
         ]
     )
-    import pdb; pdb.set_trace()
     # returns 2 values: one for the chatbot display, and one for the state to be passed back into the next call
     return history, history
 
@@ -93,6 +111,7 @@ if __name__ == "__main__":
     else:
         vectordb = load_db()
 
+    # this is the same model that you download with the script in /workspace/start_ui.sh
     llm = Ollama(model="gemma4:e4b")
 
     demo = gr.Interface(
@@ -102,7 +121,12 @@ if __name__ == "__main__":
             gr.State([])
         ],
         outputs=[
-            gr.Chatbot(),
+            gr.Chatbot(
+                latex_delimiters=[
+                    {"left": "$$", "right": "$$", "display": True},
+                    {"left": "$", "right": "$", "display": False},
+                ]
+            ),
             gr.State()
         ],
         title="Local Gemma 4 PDF Assistant"
