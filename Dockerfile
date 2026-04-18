@@ -33,13 +33,13 @@ RUN pip3 install --no-cache-dir \
     sentence-transformers \
     ollama
 
-RUN pip3 install -U langchain-huggingface sentence-transformers
+RUN pip3 install -U langchain-huggingface sentence-transformers langchain-chroma
 
 # Create workspace
 WORKDIR /workspace
 
 # Create folders
-RUN mkdir -p /workspace/code /workspace/pdfs /workspace/.db /workspace/.ollama/models
+RUN mkdir -p /workspace/code /workspace/pdfs /workspace/.db
 
 # Copy code
 COPY start_ui.sh /workspace/start_ui.sh

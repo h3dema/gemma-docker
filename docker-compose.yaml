@@ -13,4 +13,11 @@ services:
       - ./code:/workspace/code
     environment:
       - LOAD_PDFS=false
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
     restart: unless-stopped

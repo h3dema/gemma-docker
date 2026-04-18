@@ -1,18 +1,17 @@
 import os
+
 import gradio as gr
+
 from langchain_community.document_loaders import PyPDFLoader
-
-# from langchain.text_splitter import RecursiveCharacterTextSplitter
-# from langchain.vectorstores import Chroma
-# from langchain.embeddings import HuggingFaceEmbeddings
-# from langchain.llms import Ollama
-
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import Chroma
+
+# from langchain_community.vectorstores import Chroma
 # from langchain_community.embeddings import HuggingFaceEmbeddings  # to be deprecated
-from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.llms import Ollama
 
+from langchain_chroma import Chroma
+from langchain_huggingface import HuggingFaceEmbeddings
+# from langchain_ollama import OllamaLLM as Ollama
 
 DB_PATH = "/workspace/.db"
 PDF_PATH = "/workspace/pdfs"
@@ -40,7 +39,6 @@ def build_db():
 
     embeddings = HuggingFaceEmbeddings(
         model_name="sentence-transformers/all-MiniLM-L6-v2"
-        # model_name="BAAI/bge-base-en-v1.5"
     )
 
     vectordb = Chroma.from_documents(
@@ -61,6 +59,9 @@ def load_db():
     )
 
 def ask(query, history):
+    if history is None:
+        history = []
+
     docs = vectordb.similarity_search(query, k=4)
     context = "\n\n".join([d.page_content for d in docs])
 
@@ -73,8 +74,16 @@ def ask(query, history):
     """
 
     answer = llm.invoke(prompt)
-    history.append((query, answer))
+    history.extend(
+        [
+            {"role": "user", "content": [{"type": "text", "text": query}]},
+            {"role": "assistant", "content": [{"type": "text", "text": answer}]}
+        ]
+    )
+    import pdb; pdb.set_trace()
+    # returns 2 values: one for the chatbot display, and one for the state to be passed back into the next call
     return history, history
+
 
 if __name__ == "__main__":
 
@@ -84,13 +93,19 @@ if __name__ == "__main__":
     else:
         vectordb = load_db()
 
-    llm = Ollama(model="gemma-4-e4b-it")
+    llm = Ollama(model="gemma4:e4b")
 
     demo = gr.Interface(
         fn=ask,
-        inputs=[gr.Textbox(label="Ask"), gr.State([])],
-        outputs=[gr.Chatbot(), gr.State()],
-        title="Gemma 4 PDF Assistant"
+        inputs=[
+            gr.Textbox(label="Ask"),
+            gr.State([])
+        ],
+        outputs=[
+            gr.Chatbot(),
+            gr.State()
+        ],
+        title="Local Gemma 4 PDF Assistant"
     )
 
     demo.launch(server_name="0.0.0.0", server_port=80)
