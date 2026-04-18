@@ -10,6 +10,7 @@ services:
       - ./.db:/workspace/db
       - ./pdfs:/workspace/pdfs
       - ./code:/workspace/code
+      - ./.ollama:/workspace/ollama
     environment:
       - LOAD_PDFS=false
     restart: unless-stopped
