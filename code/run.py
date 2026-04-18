@@ -59,6 +59,19 @@ def load_db():
     )
 
 
+def format_docs(docs):
+    formatted = []
+    for d in docs:
+        source = os.path.basename(d.metadata.get("source", "unknown"))
+        page = d.metadata.get("page", "unknown")
+
+        formatted.append(
+            f"[Source: {source}, Page: {page}]\n{d.page_content}"
+        )
+
+    return "\n\n".join(formatted)
+
+
 def ask(query, history):
     """
     Ask a question to the model.
@@ -82,14 +95,21 @@ def ask(query, history):
         history = []
 
     docs = vectordb.similarity_search(query, k=4)
-    context = "\n\n".join([d.page_content for d in docs])
+    # context = "\n\n".join([d.page_content for d in docs])
+    context = format_docs(docs)
 
     prompt = f"""
-    Context:
-    {context}
+You are answering questions based on provided documents.
 
-    Question:
-    {query}
+Context:
+{context}
+
+Question:
+{query}
+
+Instructions:
+- Cite the source and page in your answer if possible.
+- Format citations like: (source.pdf, page X)
     """
 
     answer = llm.invoke(prompt)
