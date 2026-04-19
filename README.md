@@ -25,3 +25,9 @@ docker-compose up
 
 - `LOAD_PDFS=true` → rebuild on startup
 - `LOAD_PDFS=false` → just load DB
+
+## autorun in container
+
+This code uses GEMMA version 4 with Ollama. You can find compatible model [here](https://ollama.com/library/gemma4).
+By default, we are using `gemma4:e4b`, which is a 9.6GB model.
+If you have a good GPU, you can try with `gemma4:31b`.
