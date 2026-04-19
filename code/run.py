@@ -15,7 +15,9 @@ DB_PATH = "/workspace/.db"
 PDF_PATH = "/workspace/pdfs"
 
 os.environ["TRANSFORMERS_VERBOSITY"] = "error"
-
+# a different model can be selected by `start_ui.sh` by changing this environment variable
+# remember that it needs to be downloaded by the script
+LLM_MODEL = os.environ.get("LLM_MODEL", "gemma4:e4b")
 
 def load_pdfs():
     docs = []
@@ -132,7 +134,7 @@ if __name__ == "__main__":
         vectordb = load_db()
 
     # this is the same model that you download with the script in /workspace/start_ui.sh
-    llm = Ollama(model="gemma4:e4b")
+    llm = Ollama(model=LLM_MODEL)
 
     demo = gr.Interface(
         fn=ask,
